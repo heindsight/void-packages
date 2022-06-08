@@ -11,11 +11,12 @@ get_bootpath() {
 }
 
 add_kernel() {
-	ver=${1}
-	kernel=$(get_bootpath "/boot/vmlinux-${ver}")
-	initrd=$(get_bootpath "/boot/initramfs-${ver}.img")
-	devicetreedir=$(get_bootpath "/boot/dtbs/dtbs-${ver}")
-	fdt=$(get_bootpath "/boot/dtbs/dtbs-${ver}/${DTBPATH}")
+	kernel="$(get_bootpath "${1}")"
+	ver=$(echo ${1} | sed "s#/boot/vmlinu[xz]-\(.*\)#\\1#")
+	echo "Add kernel ${ver}"
+	initrd="$(get_bootpath "/boot/initramfs-${ver}.img")"
+	devicetreedir="$(get_bootpath "/boot/dtbs/dtbs-${ver}")"
+	fdt="$(get_bootpath "/boot/dtbs/dtbs-${ver}/${DTBPATH}")"
 	cmdline="${CMDLINE}"
 
 	printf "LABEL entry%s\n" "${ENTRY}" >> "${OUTFILE}"
@@ -52,9 +53,7 @@ main() {
 	header
 
 	for kernel in $(ls /boot/vmlinu[xz]-* | sort -rV); do
-		ver=$(echo ${kernel} | sed "s#/boot/vmlinu[xz]-\(.*\)#\\1#")
-		echo "Add kernel ${ver}"
-		add_kernel ${ver}
+		add_kernel "${kernel}"
 	done
 	mv ${OUTFILE} /boot/extlinux/extlinux.conf
 }
